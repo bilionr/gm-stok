@@ -1,0 +1,69 @@
+.omega-log-view {
+  display: flex;
+  gap: 24px;
+  width: 100%;
+}
+
+.omega-log-list {
+  width: 220px;
+  flex-shrink: 0;
+}
+
+.omega-log-list ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.omega-log-item {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border: none;
+  border-radius: 8px;
+  background: #eef0f3;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.15s ease;
+}
+
+.omega-log-item:hover {
+  background: #e2e5ea;
+}
+
+.omega-log-item.active {
+  background: #4f8cff;
+  color: #ffffff;
+}
+
+.omega-log-count {
+  color: inherit;
+  opacity: 0.65;
+  font-size: 12px;
+}
+
+.omega-log-detail {
+  flex: 1;
+}
+
+.omega-log-detail table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.omega-log-detail th,
+.omega-log-detail td {
+  text-align: left;
+  padding: 8px 12px;
+  border-bottom: 1px solid #e2e5ea;
+  font-size: 14px;
+}
+
+.omega-log-empty {
+  color: #888;
+  font-size: 14px;
+}

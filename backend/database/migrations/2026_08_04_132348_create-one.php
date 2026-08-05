@@ -11,22 +11,69 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('items', function (Blueprint $table) {
+        Schema::create('barang', function (Blueprint $table) {
             $table->id();
-            $table->string('barang')->unique();
+
+            $table->string('kode')->unique();
             $table->integer('omega')->default(0);
+
             $table->timestamps();
         });
-        Schema::create('stock_entries', function (Blueprint $table) {
+        Schema::create('logs', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('item_id')->constrained('items')->restrictOnDelete();
-            $table->integer('lokasi');
-            $table->integer('isi')->default(1);
-            $table->integer('tapel')->default(0);
-            $table->integer('tinggi')->default(0);
-            $table->integer('sisa')->default(0);
-            $table->string('cttn')->nullable()->default('');
+
+            $table->date('recorded_on');
+
+            // Optional if you check more than once per day
+            // $table->enum('shift', ['morning', 'evening']);
+
             $table->timestamps();
+
+            $table->unique('recorded_on');
+            // or unique(['recorded_on', 'shift'])
+        });
+        Schema::create('barang_locations', function (Blueprint $table) {
+            $table->id();
+
+            $table->foreignId('barang_id')
+                ->constrained('barang')
+                ->cascadeOnDelete();
+
+            $table->integer('location');
+
+            $table->timestamps();
+
+            $table->unique(['barang_id', 'location']);
+        });
+        Schema::create('entries', function (Blueprint $table) {
+            $table->id();
+
+            $table->foreignId('log_id')
+                ->constrained('logs')
+                ->cascadeOnDelete();
+
+            $table->foreignId('barang_id')
+                ->constrained('barang')
+                ->restrictOnDelete();
+
+            $table->integer('location');
+
+            $table->integer('physical_stock')->default(0);
+
+            // snapshot of Omega at the time of checking
+            $table->integer('omega_stock')->default(0);
+
+            $table->integer('difference')->default(0);
+
+            $table->text('notes')->nullable();
+
+            $table->timestamps();
+
+            $table->unique([
+                'log_id',
+                'barang_id',
+                'location',
+            ]);
         });
     }
 

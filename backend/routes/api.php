@@ -1,7 +1,6 @@
 <?php
 
-use App\Http\Controllers\ItemController;
-use App\Http\Controllers\StockEntryController;
+use App\Http\Controllers\LogController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/ping', function () {
@@ -11,5 +10,5 @@ Route::get('/ping', function () {
     ]);
 });
 
-Route::resource('items', ItemController::class);
-Route::resource('stock-entry', StockEntryController::class);
+Route::get('/logs', [LogController::class, 'index'])->name('logs.index');
+Route::get('/logs/{log}', [LogController::class, 'show'])->name('logs.show');
