@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('barang', function (Blueprint $table) {
+        Schema::create('barangs', function (Blueprint $table) {
             $table->id();
 
             $table->string('kode')->unique();
@@ -36,7 +36,7 @@ return new class extends Migration
             $table->id();
 
             $table->foreignId('barang_id')
-                ->constrained('barang')
+                ->constrained('barangs')
                 ->cascadeOnDelete();
 
             $table->integer('location');
@@ -53,7 +53,7 @@ return new class extends Migration
                 ->cascadeOnDelete();
 
             $table->foreignId('barang_id')
-                ->constrained('barang')
+                ->constrained('barangs')
                 ->restrictOnDelete();
 
             $table->integer('location');
@@ -82,7 +82,9 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('stock_entries');
-        Schema::dropIfExists('items');
+        Schema::dropIfExists('entries');
+        Schema::dropIfExists('barang_locations');
+        Schema::dropIfExists('logs');
+        Schema::dropIfExists('barangs');
     }
 };

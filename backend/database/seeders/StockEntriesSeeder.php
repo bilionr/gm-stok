@@ -2,164 +2,145 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class StockEntriesSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
-    public function run()
+    public function run(): void
     {
+        $now = now();
+
         // =========================================================================
-        // PART 1: Seed Unique Items (`items` table)
+        // PART 1: Seed Unique Items (`barangs` table)
         // =========================================================================
         $itemsData = [
-            ['barang' => 'DLSIP50',    'omega' => 61],
-            ['barang' => 'DLPG50',     'omega' => 45],
-            ['barang' => 'TLM25',      'omega' => 0],
-            ['barang' => 'DLBOLA50',   'omega' => 84],
-            ['barang' => 'TC25',       'omega' => 0],
-            ['barang' => 'GLP50',      'omega' => 0],
-            ['barang' => 'KJRS25',     'omega' => 0],
-            ['barang' => 'KJGR25',     'omega' => 0],
-            ['barang' => 'TPYG25',     'omega' => 0],
-            ['barang' => 'TTULIP25',   'omega' => 0],
-            ['barang' => 'KJRS1/2',    'omega' => 0],
-            ['barang' => 'KJGB25',     'omega' => 0],
-            ['barang' => 'MIELOS',     'omega' => 0],
-            ['barang' => 'TS05',       'omega' => 0],
-            ['barang' => 'TB1/2',      'omega' => 0],
-            ['barang' => 'TLM1',       'omega' => 0],
-            ['barang' => 'TSEG25',     'omega' => 0],
-            ['barang' => 'DLSINTA50',  'omega' => 55],
-            ['barang' => 'TC1',        'omega' => 0],
-            ['barang' => 'MINFORTPLW', 'omega' => 0],
-            ['barang' => 'TS1',        'omega' => 0],
-            ['barang' => 'MINTW1',     'omega' => 0],
-            ['barang' => 'B5P',        'omega' => 108],
-            ['barang' => 'BOB25P',     'omega' => 0],
-            ['barang' => 'B10P',       'omega' => 0],
-            ['barang' => 'RG',         'omega' => 0],
-            ['barang' => 'G5',         'omega' => 20],
-            ['barang' => 'MTGAMD15',   'omega' => 0],
-            ['barang' => 'HW',         'omega' => 0],
-            ['barang' => 'MTGAMD5',    'omega' => 0],
-            ['barang' => 'KRN',        'omega' => 0],
-            ['barang' => 'KJGL1/2',    'omega' => 0],
-            ['barang' => 'GRMD',       'omega' => 0],
-            ['barang' => 'MINCUR',     'omega' => 0],
+            ['kode' => 'DLSIP50',    'omega' => 61],
+            ['kode' => 'DLPG50',     'omega' => 45],
+            ['kode' => 'TLM25',      'omega' => 0],
+            ['kode' => 'DLBOLA50',   'omega' => 84],
+            ['kode' => 'TC25',       'omega' => 0],
+            ['kode' => 'GLP50',      'omega' => 0],
+            ['kode' => 'KJRS25',     'omega' => 0],
+            ['kode' => 'KJGR25',     'omega' => 0],
+            ['kode' => 'TPYG25',     'omega' => 0],
+            ['kode' => 'TTULIP25',   'omega' => 0],
+            ['kode' => 'KJRS1/2',    'omega' => 0],
+            ['kode' => 'KJGB25',     'omega' => 0],
+            ['kode' => 'MIELOS',     'omega' => 0],
+            ['kode' => 'TS05',       'omega' => 0],
+            ['kode' => 'TB1/2',      'omega' => 0],
+            ['kode' => 'TLM1',       'omega' => 0],
+            ['kode' => 'TSEG25',     'omega' => 0],
+            ['kode' => 'DLSINTA50',  'omega' => 55],
+            ['kode' => 'TC1',        'omega' => 0],
+            ['kode' => 'MINFORTPLW', 'omega' => 0],
+            ['kode' => 'TS1',        'omega' => 0],
+            ['kode' => 'MINTW1',     'omega' => 0],
+            ['kode' => 'B5P',        'omega' => 108],
+            ['kode' => 'BOB25P',     'omega' => 0],
+            ['kode' => 'B10P',       'omega' => 0],
+            ['kode' => 'RG',         'omega' => 0],
+            ['kode' => 'G5',         'omega' => 20],
+            ['kode' => 'MTGAMD15',   'omega' => 0],
+            ['kode' => 'HW',         'omega' => 0],
+            ['kode' => 'MTGAMD5',    'omega' => 0],
+            ['kode' => 'KRN',        'omega' => 0],
+            ['kode' => 'KJGL1/2',    'omega' => 0],
+            ['kode' => 'GRMD',       'omega' => 0],
+            ['kode' => 'MINCUR',     'omega' => 0],
         ];
 
         foreach ($itemsData as $item) {
-            DB::table('items')->updateOrInsert(
-                ['barang' => $item['barang']],
+            DB::table('barangs')->updateOrInsert(
+                ['kode' => $item['kode']],
                 [
                     'omega'      => $item['omega'],
-                    'created_at' => now(),
-                    'updated_at' => now(),
+                    'created_at' => $now,
+                    'updated_at' => $now,
                 ]
             );
         }
 
-        // Map item codes (barang) to their generated IDs from DB
-        $itemMap = DB::table('items')->pluck('id', 'barang');
-
+        // Map item codes to their generated DB IDs and omega values
+        $barangMap = DB::table('barangs')->pluck('id', 'kode');
+        $omegaMap  = DB::table('barangs')->pluck('omega', 'kode');
 
         // =========================================================================
-        // PART 2: Seed Stock Entries (`stock_entries` table)
+        // PART 2: Combine Raw Stock Datasets
         // =========================================================================
-        $stockEntriesRaw = [
-            ['barang' => 'DLSIP50',    'lokasi' => 11,  'isi' => 1,  'tapel' => 7,  'tinggi' => 8,   'sisa' => 0,  'cttn' => ''],
-            ['barang' => 'DLPG50',     'lokasi' => 11,  'isi' => 1,  'tapel' => 5,  'tinggi' => 7,   'sisa' => 4,  'cttn' => ''],
-            ['barang' => 'TLM25',      'lokasi' => 11,  'isi' => 1,  'tapel' => 5,  'tinggi' => 8,   'sisa' => 0,  'cttn' => ''],
-            ['barang' => 'DLBOLA50',   'lokasi' => 11,  'isi' => 1,  'tapel' => 5,  'tinggi' => 13,  'sisa' => 0,  'cttn' => ''],
-            ['barang' => 'TC25',       'lokasi' => 11,  'isi' => 1,  'tapel' => 0,  'tinggi' => 0,   'sisa' => 9,  'cttn' => ''],
-            ['barang' => 'GLP50',      'lokasi' => 12,  'isi' => 1,  'tapel' => 7,  'tinggi' => 7,   'sisa' => 6,  'cttn' => ''],
-            ['barang' => 'KJRS25',     'lokasi' => 13,  'isi' => 1,  'tapel' => 7,  'tinggi' => 9,   'sisa' => 3,  'cttn' => ''],
-            ['barang' => 'KJGR25',     'lokasi' => 13,  'isi' => 1,  'tapel' => 11, 'tinggi' => 7,   'sisa' => 10, 'cttn' => ''],
-            ['barang' => 'TPYG25',     'lokasi' => 21,  'isi' => 1,  'tapel' => 5,  'tinggi' => 4,   'sisa' => 2,  'cttn' => ''],
-            ['barang' => 'TTULIP25',   'lokasi' => 21,  'isi' => 1,  'tapel' => 7,  'tinggi' => 8,   'sisa' => 5,  'cttn' => ''],
-            ['barang' => 'TTULIP25',   'lokasi' => 22,  'isi' => 1,  'tapel' => 5,  'tinggi' => 20,  'sisa' => 0,  'cttn' => ''],
-            ['barang' => 'KJRS25',     'lokasi' => 22,  'isi' => 1,  'tapel' => 5,  'tinggi' => 10,  'sisa' => 1,  'cttn' => ''],
-            ['barang' => 'KJRS1/2',    'lokasi' => 22,  'isi' => 1,  'tapel' => 5,  'tinggi' => 0,   'sisa' => 0,  'cttn' => ''],
-            ['barang' => 'KJRS1/2',    'lokasi' => 31,  'isi' => 1,  'tapel' => 5,  'tinggi' => 2,   'sisa' => 4,  'cttn' => ''],
-            ['barang' => 'KJGB25',     'lokasi' => 31,  'isi' => 1,  'tapel' => 5,  'tinggi' => 10,  'sisa' => 0,  'cttn' => ''],
-            ['barang' => 'MIELOS',     'lokasi' => 33,  'isi' => 1,  'tapel' => 5,  'tinggi' => 4,   'sisa' => 3,  'cttn' => ''],
-            ['barang' => 'TS05',       'lokasi' => 33,  'isi' => 1,  'tapel' => 0,  'tinggi' => 0,   'sisa' => 40, 'cttn' => ''],
-            ['barang' => 'TB1/2',      'lokasi' => 33,  'isi' => 1,  'tapel' => 10, 'tinggi' => 10,  'sisa' => 5,  'cttn' => ''],
-            ['barang' => 'TLM1',       'lokasi' => 33,  'isi' => 1,  'tapel' => 0,  'tinggi' => 0,   'sisa' => 6,  'cttn' => ''],
-            ['barang' => 'TSEG25',     'lokasi' => 41,  'isi' => 1,  'tapel' => 7,  'tinggi' => 7,   'sisa' => 4,  'cttn' => ''],
-            ['barang' => 'DLSINTA50',  'lokasi' => 41,  'isi' => 1,  'tapel' => 5,  'tinggi' => 9,   'sisa' => 2,  'cttn' => ''],
-            ['barang' => 'TC1',        'lokasi' => 42,  'isi' => 1,  'tapel' => 4,  'tinggi' => 5,   'sisa' => 2,  'cttn' => ''],
-            ['barang' => 'TS05',       'lokasi' => 42,  'isi' => 1,  'tapel' => 0,  'tinggi' => 0,   'sisa' => 1,  'cttn' => ''],
-            ['barang' => 'MINFORTPLW', 'lokasi' => 51,  'isi' => 1,  'tapel' => 0,  'tinggi' => 0,   'sisa' => 14, 'cttn' => ''],
-            ['barang' => 'TS1',        'lokasi' => 51,  'isi' => 1,  'tapel' => 0,  'tinggi' => 0,   'sisa' => 21, 'cttn' => ''],
-            ['barang' => 'DLBOLA50',   'lokasi' => 52,  'isi' => 1,  'tapel' => 0,  'tinggi' => 0,   'sisa' => 6,  'cttn' => ''],
-            ['barang' => 'GLP50',      'lokasi' => 52,  'isi' => 1,  'tapel' => 0,  'tinggi' => 0,   'sisa' => 6,  'cttn' => ''],
-            ['barang' => 'DLSINTA50',  'lokasi' => 52,  'isi' => 1,  'tapel' => 0,  'tinggi' => 0,   'sisa' => 8,  'cttn' => ''],
-            ['barang' => 'DLPG50',     'lokasi' => 71,  'isi' => 1,  'tapel' => 0,  'tinggi' => 0,   'sisa' => 6,  'cttn' => ''],
-            ['barang' => 'MINTW1',     'lokasi' => 71,  'isi' => 1,  'tapel' => 0,  'tinggi' => 0,   'sisa' => 10, 'cttn' => ''],
-            ['barang' => 'DLBOLA50',   'lokasi' => 71,  'isi' => 1,  'tapel' => 0,  'tinggi' => 0,   'sisa' => 13, 'cttn' => ''],
-            ['barang' => 'B5P',        'lokasi' => 71,  'isi' => 1,  'tapel' => 0,  'tinggi' => 0,   'sisa' => 68, 'cttn' => ''],
-            ['barang' => 'DLSIP50',    'lokasi' => 71,  'isi' => 1,  'tapel' => 0,  'tinggi' => 0,   'sisa' => 7,  'cttn' => ''],
-            ['barang' => 'B5P',        'lokasi' => 71,  'isi' => 1,  'tapel' => 0,  'tinggi' => 0,   'sisa' => 39, 'cttn' => ''],
-            ['barang' => 'TB1/2',      'lokasi' => 71,  'isi' => 1,  'tapel' => 0,  'tinggi' => 0,   'sisa' => 0,  'cttn' => ''],
-            ['barang' => 'TLM1',       'lokasi' => 72,  'isi' => 1,  'tapel' => 0,  'tinggi' => 0,   'sisa' => 14, 'cttn' => ''],
-            ['barang' => 'KJRS1/2',    'lokasi' => 72,  'isi' => 1,  'tapel' => 0,  'tinggi' => 0,   'sisa' => 4,  'cttn' => ''],
-            ['barang' => 'BOB25P',     'lokasi' => 81,  'isi' => 1,  'tapel' => 5,  'tinggi' => 4,   'sisa' => 0,  'cttn' => ''],
-            ['barang' => 'B10P',       'lokasi' => 81,  'isi' => 1,  'tapel' => 7,  'tinggi' => 7,   'sisa' => 5,  'cttn' => ''],
-            ['barang' => 'RG',         'lokasi' => 81,  'isi' => 1,  'tapel' => 8,  'tinggi' => 5,   'sisa' => 4,  'cttn' => ''],
-            ['barang' => 'RG',         'lokasi' => 81,  'isi' => 50, 'tapel' => 0,  'tinggi' => 0,   'sisa' => 3,  'cttn' => ''],
-            ['barang' => 'MIELOS',     'lokasi' => 81,  'isi' => 1,  'tapel' => 4,  'tinggi' => 7,   'sisa' => 2,  'cttn' => ''],
-            ['barang' => 'MIELOS',     'lokasi' => 82,  'isi' => 1,  'tapel' => 4,  'tinggi' => 7,   'sisa' => 0,  'cttn' => ''],
-            ['barang' => 'G5',         'lokasi' => 82,  'isi' => 1,  'tapel' => 0,  'tinggi' => 0,   'sisa' => 9,  'cttn' => ''],
-            ['barang' => 'G5',         'lokasi' => 82,  'isi' => 2,  'tapel' => 0,  'tinggi' => 0,   'sisa' => 5,  'cttn' => ''],
-            ['barang' => 'RG',         'lokasi' => 84,  'isi' => 1,  'tapel' => 0,  'tinggi' => 0,   'sisa' => 4,  'cttn' => ''],
-            ['barang' => 'MTGAMD15',   'lokasi' => 110, 'isi' => 1,  'tapel' => 0,  'tinggi' => 0,   'sisa' => 1,  'cttn' => ''],
-            ['barang' => 'TS1',        'lokasi' => 110, 'isi' => 1,  'tapel' => 0,  'tinggi' => 0,   'sisa' => 7,  'cttn' => ''],
-            ['barang' => 'HW',         'lokasi' => 110, 'isi' => 1,  'tapel' => 5,  'tinggi' => 4,   'sisa' => 3,  'cttn' => ''],
-            ['barang' => 'TB1/2',      'lokasi' => 110, 'isi' => 1,  'tapel' => 10, 'tinggi' => 10,  'sisa' => 0,  'cttn' => ''],
-            ['barang' => 'MTGAMD5',    'lokasi' => 120, 'isi' => 1,  'tapel' => 0,  'tinggi' => 0,   'sisa' => 15, 'cttn' => ''],
-            ['barang' => 'TLM1',       'lokasi' => 120, 'isi' => 1,  'tapel' => 0,  'tinggi' => 0,   'sisa' => 9,  'cttn' => ''],
-            ['barang' => 'KRN',        'lokasi' => 120, 'isi' => 10, 'tapel' => 5,  'tinggi' => 5,   'sisa' => 4,  'cttn' => ''],
-            ['barang' => 'TB1/2',      'lokasi' => 130, 'isi' => 1,  'tapel' => 0,  'tinggi' => 0,   'sisa' => 3,  'cttn' => ''],
-            ['barang' => 'KJGL1/2',    'lokasi' => 130, 'isi' => 1,  'tapel' => 5,  'tinggi' => 0,   'sisa' => 3,  'cttn' => ''],
-            ['barang' => 'KJGL1/2',    'lokasi' => 130, 'isi' => 1,  'tapel' => 5,  'tinggi' => 30,  'sisa' => 0,  'cttn' => ''],
-            ['barang' => 'KJGL1/2',    'lokasi' => 130, 'isi' => 1,  'tapel' => 5,  'tinggi' => 19,  'sisa' => 1,  'cttn' => ''],
-            ['barang' => 'KJGL1/2',    'lokasi' => 130, 'isi' => 1,  'tapel' => 5,  'tinggi' => 0,   'sisa' => 0,  'cttn' => ''],
-            ['barang' => 'TB1/2',      'lokasi' => 140, 'isi' => 1,  'tapel' => 6,  'tinggi' => 3,   'sisa' => 0,  'cttn' => ''],
-            ['barang' => 'TB1/2',      'lokasi' => 140, 'isi' => 1,  'tapel' => 6,  'tinggi' => 3,   'sisa' => 2,  'cttn' => ''],
-            ['barang' => 'GRMD',       'lokasi' => 140, 'isi' => 1,  'tapel' => 10, 'tinggi' => 20,  'sisa' => 0,  'cttn' => ''],
-            ['barang' => 'GRMD',       'lokasi' => 140, 'isi' => 1,  'tapel' => 10, 'tinggi' => 20,  'sisa' => 0,  'cttn' => ''],
-            ['barang' => 'GRMD',       'lokasi' => 140, 'isi' => 1,  'tapel' => 7,  'tinggi' => 11,  'sisa' => 6,  'cttn' => ''],
-            ['barang' => 'MINCUR',     'lokasi' => 150, 'isi' => 4,  'tapel' => 0,  'tinggi' => 0,   'sisa' => 13, 'cttn' => ''],
-            ['barang' => 'MINCUR',     'lokasi' => 150, 'isi' => 10, 'tapel' => 0,  'tinggi' => 0,   'sisa' => 3,  'cttn' => ''],
-            ['barang' => 'MINCUR',     'lokasi' => 150, 'isi' => 15, 'tapel' => 0,  'tinggi' => 0,   'sisa' => 11, 'cttn' => ''],
-            ['barang' => 'MINCUR',     'lokasi' => 150, 'isi' => 20, 'tapel' => 0,  'tinggi' => 0,   'sisa' => 12, 'cttn' => ''],
-            ['barang' => 'MINCUR',     'lokasi' => 150, 'isi' => 1,  'tapel' => 0,  'tinggi' => 0,   'sisa' => 0,  'cttn' => ''],
-            ['barang' => 'MINCUR',     'lokasi' => 160, 'isi' => 0,  'tapel' => 0,  'tinggi' => 735, 'sisa' => 0,  'cttn' => '4053'],
+        $stockEntriesRawInitial = [
+            ['barang' => 'DLSIP50',    'lokasi' => 11,  'isi' => 1,  'tapel' => 7,  'tinggi' => 8,   'sisa' => 0,  'date' => '2026-07-31', 'cttn' => ''],
+            ['barang' => 'DLPG50',     'lokasi' => 11,  'isi' => 1,  'tapel' => 5,  'tinggi' => 7,   'sisa' => 4,  'date' => '2026-07-31', 'cttn' => ''],
+            ['barang' => 'TLM25',      'lokasi' => 11,  'isi' => 1,  'tapel' => 5,  'tinggi' => 8,   'sisa' => 0,  'date' => '2026-07-31', 'cttn' => ''],
+            ['barang' => 'DLBOLA50',   'lokasi' => 11,  'isi' => 1,  'tapel' => 5,  'tinggi' => 13,  'sisa' => 0,  'date' => '2026-07-31', 'cttn' => ''],
+            ['barang' => 'TC25',       'lokasi' => 11,  'isi' => 1,  'tapel' => 0,  'tinggi' => 0,   'sisa' => 9,  'date' => '2026-07-31', 'cttn' => ''],
+            ['barang' => 'GLP50',      'lokasi' => 12,  'isi' => 1,  'tapel' => 7,  'tinggi' => 7,   'sisa' => 6,  'date' => '2026-07-31', 'cttn' => ''],
+            ['barang' => 'KJRS25',     'lokasi' => 13,  'isi' => 1,  'tapel' => 7,  'tinggi' => 9,   'sisa' => 3,  'date' => '2026-07-31', 'cttn' => ''],
+            ['barang' => 'KJGR25',     'lokasi' => 13,  'isi' => 1,  'tapel' => 11, 'tinggi' => 7,   'sisa' => 10, 'date' => '2026-07-31', 'cttn' => ''],
+            ['barang' => 'TPYG25',     'lokasi' => 21,  'isi' => 1,  'tapel' => 5,  'tinggi' => 4,   'sisa' => 2,  'date' => '2026-07-31', 'cttn' => ''],
+            ['barang' => 'TTULIP25',   'lokasi' => 21,  'isi' => 1,  'tapel' => 7,  'tinggi' => 8,   'sisa' => 5,  'date' => '2026-07-31', 'cttn' => ''],
+            ['barang' => 'TTULIP25',   'lokasi' => 22,  'isi' => 1,  'tapel' => 5,  'tinggi' => 20,  'sisa' => 0,  'date' => '2026-07-31', 'cttn' => ''],
+            ['barang' => 'KJRS25',     'lokasi' => 22,  'isi' => 1,  'tapel' => 5,  'tinggi' => 10,  'sisa' => 1,  'date' => '2026-07-31', 'cttn' => ''],
+            ['barang' => 'KJRS1/2',    'lokasi' => 22,  'isi' => 1,  'tapel' => 5,  'tinggi' => 0,   'sisa' => 0,  'date' => '2026-07-31', 'cttn' => ''],
+            ['barang' => 'KJRS1/2',    'lokasi' => 31,  'isi' => 1,  'tapel' => 5,  'tinggi' => 2,   'sisa' => 4,  'date' => '2026-07-31', 'cttn' => ''],
+            ['barang' => 'KJGB25',     'lokasi' => 31,  'isi' => 1,  'tapel' => 5,  'tinggi' => 10,  'sisa' => 0,  'date' => '2026-07-31', 'cttn' => ''],
+            ['barang' => 'MIELOS',     'lokasi' => 33,  'isi' => 1,  'tapel' => 5,  'tinggi' => 4,   'sisa' => 3,  'date' => '2026-07-31', 'cttn' => ''],
+            ['barang' => 'TS05',       'lokasi' => 33,  'isi' => 1,  'tapel' => 0,  'tinggi' => 0,   'sisa' => 40, 'date' => '2026-07-31', 'cttn' => ''],
+            ['barang' => 'TB1/2',      'lokasi' => 33,  'isi' => 1,  'tapel' => 10, 'tinggi' => 10,  'sisa' => 5,  'date' => '2026-07-31', 'cttn' => ''],
+            ['barang' => 'TLM1',       'lokasi' => 33,  'isi' => 1,  'tapel' => 0,  'tinggi' => 0,   'sisa' => 6,  'date' => '2026-07-31', 'cttn' => ''],
+            ['barang' => 'TSEG25',     'lokasi' => 41,  'isi' => 1,  'tapel' => 7,  'tinggi' => 7,   'sisa' => 4,  'date' => '2026-07-31', 'cttn' => ''],
+            ['barang' => 'DLSINTA50',  'lokasi' => 41,  'isi' => 1,  'tapel' => 5,  'tinggi' => 9,   'sisa' => 2,  'date' => '2026-07-31', 'cttn' => ''],
+            ['barang' => 'TC1',        'lokasi' => 42,  'isi' => 1,  'tapel' => 4,  'tinggi' => 5,   'sisa' => 2,  'date' => '2026-07-31', 'cttn' => ''],
+            ['barang' => 'TS05',       'lokasi' => 42,  'isi' => 1,  'tapel' => 0,  'tinggi' => 0,   'sisa' => 1,  'date' => '2026-07-31', 'cttn' => ''],
+            ['barang' => 'MINFORTPLW', 'lokasi' => 51,  'isi' => 1,  'tapel' => 0,  'tinggi' => 0,   'sisa' => 14, 'date' => '2026-07-31', 'cttn' => ''],
+            ['barang' => 'TS1',        'lokasi' => 51,  'isi' => 1,  'tapel' => 0,  'tinggi' => 0,   'sisa' => 21, 'date' => '2026-07-31', 'cttn' => ''],
+            ['barang' => 'DLBOLA50',   'lokasi' => 52,  'isi' => 1,  'tapel' => 0,  'tinggi' => 0,   'sisa' => 6,  'date' => '2026-07-31', 'cttn' => ''],
+            ['barang' => 'GLP50',      'lokasi' => 52,  'isi' => 1,  'tapel' => 0,  'tinggi' => 0,   'sisa' => 6,  'date' => '2026-07-31', 'cttn' => ''],
+            ['barang' => 'DLSINTA50',  'lokasi' => 52,  'isi' => 1,  'tapel' => 0,  'tinggi' => 0,   'sisa' => 8,  'date' => '2026-07-31', 'cttn' => ''],
+            ['barang' => 'DLPG50',     'lokasi' => 71,  'isi' => 1,  'tapel' => 0,  'tinggi' => 0,   'sisa' => 6,  'date' => '2026-07-31', 'cttn' => ''],
+            ['barang' => 'MINTW1',     'lokasi' => 71,  'isi' => 1,  'tapel' => 0,  'tinggi' => 0,   'sisa' => 10, 'date' => '2026-07-31', 'cttn' => ''],
+            ['barang' => 'DLBOLA50',   'lokasi' => 71,  'isi' => 1,  'tapel' => 0,  'tinggi' => 0,   'sisa' => 13, 'date' => '2026-07-31', 'cttn' => ''],
+            ['barang' => 'B5P',        'lokasi' => 71,  'isi' => 1,  'tapel' => 0,  'tinggi' => 0,   'sisa' => 68, 'date' => '2026-07-31', 'cttn' => ''],
+            ['barang' => 'DLSIP50',    'lokasi' => 71,  'isi' => 1,  'tapel' => 0,  'tinggi' => 0,   'sisa' => 7,  'date' => '2026-07-31', 'cttn' => ''],
+            ['barang' => 'B5P',        'lokasi' => 71,  'isi' => 1,  'tapel' => 0,  'tinggi' => 0,   'sisa' => 39, 'date' => '2026-07-31', 'cttn' => ''],
+            ['barang' => 'TB1/2',      'lokasi' => 71,  'isi' => 1,  'tapel' => 0,  'tinggi' => 0,   'sisa' => 0,  'date' => '2026-07-31', 'cttn' => ''],
+            ['barang' => 'TLM1',       'lokasi' => 72,  'isi' => 1,  'tapel' => 0,  'tinggi' => 0,   'sisa' => 14, 'date' => '2026-07-31', 'cttn' => ''],
+            ['barang' => 'KJRS1/2',    'lokasi' => 72,  'isi' => 1,  'tapel' => 0,  'tinggi' => 0,   'sisa' => 4,  'date' => '2026-07-31', 'cttn' => ''],
+            ['barang' => 'BOB25P',     'lokasi' => 81,  'isi' => 1,  'tapel' => 5,  'tinggi' => 4,   'sisa' => 0,  'date' => '2026-07-31', 'cttn' => ''],
+            ['barang' => 'B10P',       'lokasi' => 81,  'isi' => 1,  'tapel' => 7,  'tinggi' => 7,   'sisa' => 5,  'date' => '2026-07-31', 'cttn' => ''],
+            ['barang' => 'RG',         'lokasi' => 81,  'isi' => 1,  'tapel' => 8,  'tinggi' => 5,   'sisa' => 4,  'date' => '2026-07-31', 'cttn' => ''],
+            ['barang' => 'RG',         'lokasi' => 81,  'isi' => 50, 'tapel' => 0,  'tinggi' => 0,   'sisa' => 3,  'date' => '2026-07-31', 'cttn' => ''],
+            ['barang' => 'MIELOS',     'lokasi' => 81,  'isi' => 1,  'tapel' => 4,  'tinggi' => 7,   'sisa' => 2,  'date' => '2026-07-31', 'cttn' => ''],
+            ['barang' => 'MIELOS',     'lokasi' => 82,  'isi' => 1,  'tapel' => 4,  'tinggi' => 7,   'sisa' => 0,  'date' => '2026-07-31', 'cttn' => ''],
+            ['barang' => 'G5',         'lokasi' => 82,  'isi' => 1,  'tapel' => 0,  'tinggi' => 0,   'sisa' => 9,  'date' => '2026-07-31', 'cttn' => ''],
+            ['barang' => 'G5',         'lokasi' => 82,  'isi' => 2,  'tapel' => 0,  'tinggi' => 0,   'sisa' => 5,  'date' => '2026-07-31', 'cttn' => ''],
+            ['barang' => 'RG',         'lokasi' => 84,  'isi' => 1,  'tapel' => 0,  'tinggi' => 0,   'sisa' => 4,  'date' => '2026-07-31', 'cttn' => ''],
+            ['barang' => 'MTGAMD15',   'lokasi' => 110, 'isi' => 1,  'tapel' => 0,  'tinggi' => 0,   'sisa' => 1,  'date' => '2026-07-31', 'cttn' => ''],
+            ['barang' => 'TS1',        'lokasi' => 110, 'isi' => 1,  'tapel' => 0,  'tinggi' => 0,   'sisa' => 7,  'date' => '2026-07-31', 'cttn' => ''],
+            ['barang' => 'HW',         'lokasi' => 110, 'isi' => 1,  'tapel' => 5,  'tinggi' => 4,   'sisa' => 3,  'date' => '2026-07-31', 'cttn' => ''],
+            ['barang' => 'TB1/2',      'lokasi' => 110, 'isi' => 1,  'tapel' => 10, 'tinggi' => 10,  'sisa' => 0,  'date' => '2026-07-31', 'cttn' => ''],
+            ['barang' => 'MTGAMD5',    'lokasi' => 120, 'isi' => 1,  'tapel' => 0,  'tinggi' => 0,   'sisa' => 15, 'date' => '2026-07-31', 'cttn' => ''],
+            ['barang' => 'TLM1',       'lokasi' => 120, 'isi' => 1,  'tapel' => 0,  'tinggi' => 0,   'sisa' => 9,  'date' => '2026-07-31', 'cttn' => ''],
+            ['barang' => 'KRN',        'lokasi' => 120, 'isi' => 10, 'tapel' => 5,  'tinggi' => 5,   'sisa' => 4,  'date' => '2026-07-31', 'cttn' => ''],
+            ['barang' => 'TB1/2',      'lokasi' => 130, 'isi' => 1,  'tapel' => 0,  'tinggi' => 0,   'sisa' => 3,  'date' => '2026-07-31', 'cttn' => ''],
+            ['barang' => 'KJGL1/2',    'lokasi' => 130, 'isi' => 1,  'tapel' => 5,  'tinggi' => 0,   'sisa' => 3,  'date' => '2026-07-31', 'cttn' => ''],
+            ['barang' => 'KJGL1/2',    'lokasi' => 130, 'isi' => 1,  'tapel' => 5,  'tinggi' => 30,  'sisa' => 0,  'date' => '2026-07-31', 'cttn' => ''],
+            ['barang' => 'KJGL1/2',    'lokasi' => 130, 'isi' => 1,  'tapel' => 5,  'tinggi' => 19,  'sisa' => 1,  'date' => '2026-07-31', 'cttn' => ''],
+            ['barang' => 'KJGL1/2',    'lokasi' => 130, 'isi' => 1,  'tapel' => 5,  'tinggi' => 0,   'sisa' => 0,  'date' => '2026-07-31', 'cttn' => ''],
+            ['barang' => 'TB1/2',      'lokasi' => 140, 'isi' => 1,  'tapel' => 6,  'tinggi' => 3,   'sisa' => 0,  'date' => '2026-07-31', 'cttn' => ''],
+            ['barang' => 'TB1/2',      'lokasi' => 140, 'isi' => 1,  'tapel' => 6,  'tinggi' => 3,   'sisa' => 2,  'date' => '2026-07-31', 'cttn' => ''],
+            ['barang' => 'GRMD',       'lokasi' => 140, 'isi' => 1,  'tapel' => 10, 'tinggi' => 20,  'sisa' => 0,  'date' => '2026-07-31', 'cttn' => ''],
+            ['barang' => 'GRMD',       'lokasi' => 140, 'isi' => 1,  'tapel' => 10, 'tinggi' => 20,  'sisa' => 0,  'date' => '2026-07-31', 'cttn' => ''],
+            ['barang' => 'GRMD',       'lokasi' => 140, 'isi' => 1,  'tapel' => 7,  'tinggi' => 11,  'sisa' => 6,  'date' => '2026-07-31', 'cttn' => ''],
+            ['barang' => 'MINCUR',     'lokasi' => 150, 'isi' => 4,  'tapel' => 0,  'tinggi' => 0,   'sisa' => 13, 'date' => '2026-07-31', 'cttn' => ''],
+            ['barang' => 'MINCUR',     'lokasi' => 150, 'isi' => 10, 'tapel' => 0,  'tinggi' => 0,   'sisa' => 3,  'date' => '2026-07-31', 'cttn' => ''],
+            ['barang' => 'MINCUR',     'lokasi' => 150, 'isi' => 15, 'tapel' => 0,  'tinggi' => 0,   'sisa' => 11, 'date' => '2026-07-31', 'cttn' => ''],
+            ['barang' => 'MINCUR',     'lokasi' => 150, 'isi' => 20, 'tapel' => 0,  'tinggi' => 0,   'sisa' => 12, 'date' => '2026-07-31', 'cttn' => ''],
+            ['barang' => 'MINCUR',     'lokasi' => 150, 'isi' => 1,  'tapel' => 0,  'tinggi' => 0,   'sisa' => 0,  'date' => '2026-07-31', 'cttn' => ''],
+            ['barang' => 'MINCUR',     'lokasi' => 160, 'isi' => 0,  'tapel' => 0,  'tinggi' => 735, 'sisa' => 0,  'date' => '2026-07-31', 'cttn' => '4053'],
         ];
-
-        $stockEntries = [];
-
-        foreach ($stockEntriesRaw as $entry) {
-            $stockEntries[] = [
-                'item_id'    => $itemMap[$entry['barang']],
-                'lokasi'     => $entry['lokasi'],
-                'isi'        => $entry['isi'],
-                'tapel'      => $entry['tapel'],
-                'tinggi'     => $entry['tinggi'],
-                'sisa'       => $entry['sisa'],
-                'cttn'       => $entry['cttn'],
-                'created_at' => now(),
-                'updated_at' => now(),
-            ];
-        }
-
-        DB::table('stock_entries')->insert($stockEntries);
 
         $stockEntriesRawNew = [
             ['barang' => 'DLSIP50',    'lokasi' => 11,  'isi' => 1,  'tapel' => 7,  'tinggi' => 10, 'sisa' => 2,  'date' => '2026-08-01', 'cttn' => ''],
@@ -232,22 +213,79 @@ class StockEntriesSeeder extends Seeder
             ['barang' => 'MINCUR',     'lokasi' => 150, 'isi' => 1,  'tapel' => 0,  'tinggi' => 0,  'sisa' => 2,  'date' => '2026-08-05', 'cttn' => ''],
             ['barang' => 'MINCUR',     'lokasi' => 160, 'isi' => 0,  'tapel' => 0,  'tinggi' => 680,'sisa' => 0,  'date' => '2026-08-05', 'cttn' => '4053'],
         ];
-        $stockEntriesNew = [];
 
-        foreach ($stockEntriesNew as $entry) {
-            $stockEntriesNew[] = [
-                'item_id'    => $itemMap[$entry['barang']],
-                'lokasi'     => $entry['lokasi'],
-                'isi'        => $entry['isi'],
-                'tapel'      => $entry['tapel'],
-                'tinggi'     => $entry['tinggi'],
-                'sisa'       => $entry['sisa'],
-                'cttn'       => $entry['cttn'],
-                'created_at' => now(),
-                'updated_at' => now(),
+        $allEntriesRaw = array_merge($stockEntriesRawInitial, $stockEntriesRawNew);
+
+        // =========================================================================
+        // PART 3: Seed `logs` Table Dynamically from Entry Dates
+        // =========================================================================
+        $dates = collect($allEntriesRaw)->pluck('date')->unique()->values();
+
+        foreach ($dates as $date) {
+            DB::table('logs')->updateOrInsert(
+                ['recorded_on' => $date],
+                [
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ]
+            );
+        }
+
+        $logMap = DB::table('logs')->pluck('id', 'recorded_on');
+
+        // =========================================================================
+        // PART 4: Seed `barang_locations` Table from Unique Pairs
+        // =========================================================================
+        $locations = collect($allEntriesRaw)
+            ->map(fn($entry) => [
+                'barang_id' => $barangMap[$entry['barang']], // Fixed key here
+                'location'  => $entry['lokasi'],
+            ])
+            ->unique(fn($item) => $item['barang_id'] . '-' . $item['location']);
+
+        foreach ($locations as $loc) {
+            DB::table('barang_locations')->updateOrInsert(
+                [
+                    'barang_id' => $loc['barang_id'],
+                    'location'  => $loc['location'],
+                ],
+                [
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ]
+            );
+        }
+
+        // =========================================================================
+        // PART 5: Seed `entries` Table
+        // =========================================================================
+        $entriesToInsert = [];
+
+        foreach ($allEntriesRaw as $entry) {
+            $barangId = $barangMap[$entry['barang']]; // Fixed key here
+            $logId    = $logMap[$entry['date']];
+            $omega    = $omegaMap[$entry['barang']];  // Fixed key here
+
+            // Formula: Physical Stock = (tapel * tinggi) + sisa
+            $physicalStock = ($entry['tapel'] * $entry['tinggi']) + $entry['sisa'];
+            $difference    = $physicalStock - $omega;
+
+            $entriesToInsert[] = [
+                'log_id'         => $logId,
+                'barang_id'      => $barangId,
+                'location'       => $entry['lokasi'],
+                'physical_stock' => $physicalStock,
+                'omega_stock'    => $omega,
+                'difference'     => $difference,
+                'notes'          => $entry['cttn'] ?: null,
+                'created_at'     => $now,
+                'updated_at'     => $now,
             ];
         }
 
-        DB::table('stock_entries')->insert($stockEntriesNew);
+        // Bulk insert in chunks to respect foreign keys & improve performance
+        foreach (array_chunk($entriesToInsert, 50) as $chunk) {
+            DB::table('entries')->insertOrIgnore($chunk);
+        }
     }
 }

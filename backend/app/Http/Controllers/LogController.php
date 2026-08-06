@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Log;
 
 class LogController extends Controller
 {
@@ -12,15 +13,15 @@ class LogController extends Controller
     public function index()
     {
         $logs = Log::withCount([
-                'entries',
-                'entries as discrepancies_count' => function ($query) {
-                    $query->where('difference', '!=', 0);
-                },
-            ])
-            ->orderByDesc('recorded_on')
-            ->paginate(20);
+            'entries',
+            'entries as discrepancies_count' => function ($query) {
+                $query->where('difference', '!=', 0);
+            },
+        ])
+        ->orderByDesc('recorded_on')
+        ->get();
 
-        return view('logs.index', compact('logs'));
+        return response()->json($logs);
     }
 
     /**

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\LogController;
+use App\Http\Controllers\EntryController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/ping', function () {
@@ -11,4 +12,4 @@ Route::get('/ping', function () {
 });
 
 Route::get('/logs', [LogController::class, 'index'])->name('logs.index');
-Route::get('/logs/{log}', [LogController::class, 'show'])->name('logs.show');
+Route::get('/logs/{log}/entries', [EntryController::class, 'index']);
