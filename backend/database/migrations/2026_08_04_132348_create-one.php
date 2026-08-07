@@ -58,6 +58,11 @@ return new class extends Migration
 
             $table->integer('location');
 
+            $table->integer('isi')->default(0);
+            $table->integer('tapel')->default(0);
+            $table->integer('tinggi')->default(0);
+            $table->integer('sisa')->default(0);
+
             $table->integer('physical_stock')->default(0);
 
             // snapshot of Omega at the time of checking

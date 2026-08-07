@@ -13,3 +13,4 @@ Route::get('/ping', function () {
 
 Route::get('/logs', [LogController::class, 'index'])->name('logs.index');
 Route::get('/logs/{log}/entries', [EntryController::class, 'index']);
+Route::put('/logs/{log}/entries/update', [EntryController::class, 'update']);

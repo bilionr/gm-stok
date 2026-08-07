@@ -33,7 +33,7 @@ function CustomButtonComponent(props: CustomCellRendererProps<LogRow>) {
 
   const handleClick = () => {
     if (props.data?.id) {
-      router.push(`/entries/${props.data.id}`);
+      router.push(`/logs/${props.data.id}/entries/`);
     }
   };
 

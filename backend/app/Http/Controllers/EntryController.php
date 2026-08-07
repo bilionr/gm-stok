@@ -42,9 +42,33 @@ class EntryController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, Log $log)
     {
-        //
+        $validated = $request->validate([
+            'entries' => 'required|array',
+            'entries.*.id' => 'required|integer|exists:entries,id',
+            'entries.*.isi' => 'nullable|integer',
+            'entries.*.tapel' => 'nullable|integer',
+            'entries.*.tinggi' => 'nullable|integer',
+            'entries.*.sisa' => 'nullable|integer',
+            'entries.*.physical_stock' => 'nullable|integer',
+            'entries.*.notes' => 'nullable|string',
+        ]);
+
+        foreach ($validated['entries'] as $entryData) {
+            Entry::where('id', $entryData['id'])
+                ->where('log_id', $log->id) // guards against updating another log's entries
+                ->update([
+                    'isi' => $entryData['isi'] ?? 0,
+                    'tapel' => $entryData['tapel'] ?? 0,
+                    'tinggi' => $entryData['tinggi'] ?? 0,
+                    'sisa' => $entryData['sisa'] ?? 0,
+                    'physical_stock' => $entryData['physical_stock'] ?? 0,
+                    'notes' => $entryData['notes'] ?? null,
+                ]);
+        }
+
+        return response()->json(['message' => 'Entries updated successfully']);
     }
 
     /**
