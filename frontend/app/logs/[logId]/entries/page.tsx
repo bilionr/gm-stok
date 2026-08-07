@@ -8,6 +8,7 @@ import {
   ColDef,
   GridReadyEvent,
   CellValueChangedEvent,
+  SelectionChangedEvent,
   AllCommunityModule,
   ModuleRegistry,
 } from 'ag-grid-community';
@@ -43,13 +44,29 @@ interface LogSummary {
 }
 
 interface FloatingNavbarProps {
-  title?: string;
   onBack?: () => void;
+  onAdd?: () => void;
   onSave?: () => void;
+  onRemove?: () => void;
+  canRemove?: boolean;
   saving?: boolean;
+  removing?: boolean;
 }
 
-function FloatingNavbar({ title = '', onBack, onSave, saving }: FloatingNavbarProps) {
+interface BarangOption {
+  id: number;
+  kode: string;
+}
+
+function FloatingNavbar({ 
+  onBack,
+  onAdd,
+  onSave,
+  onRemove,
+  canRemove,
+  saving,
+  removing,
+ }: FloatingNavbarProps) {
   const [visible, setVisible] = useState(true); // visible by default at page top
   const lastScrollY = useRef(0);
 
@@ -85,7 +102,6 @@ function FloatingNavbar({ title = '', onBack, onSave, saving }: FloatingNavbarPr
           ← Back
         </button>
       )}
-      {title && <span className="text-sm font-semibold text-gray-900">{title}</span>}
       {onSave && (
         <button
           onClick={onSave}
@@ -93,6 +109,23 @@ function FloatingNavbar({ title = '', onBack, onSave, saving }: FloatingNavbarPr
           className="text-sm font-medium px-3 py-1 rounded-full bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 transition-colors"
         >
           {saving ? 'Saving…' : 'Save'}
+        </button>
+      )}
+      {onAdd && (
+        <button
+          onClick={onAdd}
+          className="text-sm font-medium px-3 py-1 rounded-full bg-gray-800 text-white hover:bg-gray-900 transition-colors"
+        >
+          + Add
+        </button>
+      )}
+      {onRemove && (
+        <button
+          onClick={onRemove}
+          disabled={!canRemove || removing}
+          className="text-sm font-medium px-3 py-1 rounded-full bg-red-600 text-white hover:bg-red-700 disabled:opacity-40 transition-colors"
+        >
+          {removing ? 'Removing…' : 'Remove'}
         </button>
       )}
     </nav>
@@ -109,32 +142,53 @@ export default function EntriesPage() {
   const [log, setLog] = useState<LogSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [removing, setRemoving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const [selectedRow, setSelectedRow] = useState<EntryRow | null>(null);
+
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [barangOptions, setBarangOptions] = useState<BarangOption[]>([]);
+  const [selectedBarangId, setSelectedBarangId] = useState('');
+  const [location, setLocation] = useState('');
+  const [selectedOptionId, setSelectedOptionId] = useState<string>('');
+  const [loadingOptions, setLoadingOptions] = useState(false);
+  const [addingRow, setAddingRow] = useState(false);
+
+  const fetchEntries = useCallback(() => {
+    setLoading(true);
+    fetch(`${API_BASE}/api/logs/${logId}/entries`, {
+      headers: { Accept: 'application/json' },
+    })
+      .then((resp) => {
+        if (!resp.ok) throw new Error(`Request failed: ${resp.status}`);
+        return resp.json();
+      })
+      .then((json: { log: LogSummary; entries: EntryRow[] }) => {
+        setLog(json.log);
+        setRowData(json.entries);
+      })
+      .catch((err) =>
+        setError(err instanceof Error ? err.message : 'Failed to load entries')
+      )
+      .finally(() => setLoading(false));
+  }, [logId]);
 
   const onGridReady = useCallback(
     (gridParams: GridReadyEvent) => {
-      fetch(`${API_BASE}/api/logs/${logId}/entries`, {
-        headers: { Accept: 'application/json' },
-      })
-        .then((resp) => {
-          if (!resp.ok) throw new Error(`Request failed: ${resp.status}`);
-          return resp.json();
-        })
-        .then((json: { log: LogSummary; entries: EntryRow[] }) => {
-          setLog(json.log);
-          setRowData(json.entries);
-        })
-        .catch((err) =>
-          setError(err instanceof Error ? err.message : 'Failed to load entries')
-        )
-        .finally(() => setLoading(false));
+      fetchEntries();
     },
-    [logId]
+    [fetchEntries]
   );
 
  // Recompute the physical_stock cell whenever isi/tapel/tinggi/sisa is edited
   const onCellValueChanged = useCallback((event: CellValueChangedEvent<EntryRow>) => {
     event.api.refreshCells({ rowNodes: [event.node], force: true });
+  }, []);
+
+  const onSelectionChanged = useCallback((event: SelectionChangedEvent<EntryRow>) => {
+    const rows = event.api.getSelectedRows();
+    setSelectedRow(rows.length > 0 ? rows[0] : null);
   }, []);
 
   const columnDefs = useMemo<ColDef<EntryRow>[]>(
@@ -145,11 +199,11 @@ export default function EntriesPage() {
         flex: 1.5,
         valueGetter: (p) => p.data?.barang?.kode ?? `#${p.data?.barang_id}`,
       },
-      { field: 'location', headerName: 'Location', width: 110 },
+      { field: 'location', headerName: 'Location', width: 25 },
       {
         field: 'isi',
         headerName: 'Isi',
-        width: 90,
+        width: 25,
         editable: true,
         type: 'numericColumn',
         valueParser: (p) => Number(p.newValue) || 0,
@@ -157,7 +211,7 @@ export default function EntriesPage() {
       {
         field: 'tapel',
         headerName: 'Tapel',
-        width: 90,
+        width: 25,
         editable: true,
         type: 'numericColumn',
         valueParser: (p) => Number(p.newValue) || 0,
@@ -165,7 +219,7 @@ export default function EntriesPage() {
       {
         field: 'tinggi',
         headerName: 'Tinggi',
-        width: 90,
+        width: 25,
         editable: true,
         type: 'numericColumn',
         valueParser: (p) => Number(p.newValue) || 0,
@@ -173,7 +227,7 @@ export default function EntriesPage() {
       {
         field: 'sisa',
         headerName: 'Sisa',
-        width: 90,
+        width: 25,
         editable: true,
         type: 'numericColumn',
         valueParser: (p) => Number(p.newValue) || 0,
@@ -231,11 +285,20 @@ export default function EntriesPage() {
 
     try {
       const resp = await fetch(`${API_BASE}/api/logs/${logId}/entries/update`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
         body: JSON.stringify({ entries }),
       });
-      if (!resp.ok) throw new Error(`Save failed: ${resp.status}`);
+
+      const data = await resp.json();
+      console.log(resp.status, data);
+
+      if (!resp.ok) {
+        throw new Error(data.message ?? `Save failed: ${resp.status}`);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save entries');
     } finally {
@@ -243,27 +306,131 @@ export default function EntriesPage() {
     }
   }, [logId]);
 
+  const openAddModal = useCallback(() => {
+    setShowAddModal(true);
+    setSelectedBarangId('');
+    setLocation('');
+    setLoadingOptions(true);
+
+    fetch(`${API_BASE}/api/barangs`, {
+      headers: {
+        Accept: 'application/json',
+      },
+    })
+      .then((resp) => {
+        if (!resp.ok) {
+          throw new Error(`Request failed: ${resp.status}`);
+        }
+
+        return resp.json();
+      })
+      .then((data: BarangOption[]) => {
+        setBarangOptions(data);
+      })
+      .catch((err) => {
+        console.error(err);
+        setBarangOptions([]);
+      })
+      .finally(() => {
+        setLoadingOptions(false);
+      });
+  }, []);
+
+  const handleConfirmAdd = useCallback(async () => {
+    if (!selectedBarangId || !location) return;
+
+    setAddingRow(true);
+    setError(null);
+
+    try {
+      const resp = await fetch(
+        `${API_BASE}/api/logs/${logId}/entries`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+          body: JSON.stringify({
+            barang_id: Number(selectedBarangId),
+            location: Number(location),
+          }),
+        }
+      );
+
+      const data = await resp.json();
+
+      if (!resp.ok) {
+        throw new Error(
+          data.message ?? `Add failed: ${resp.status}`
+        );
+      }
+
+      setRowData((prev) => [...prev, data]);
+      setShowAddModal(false);
+
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'Failed to add entry'
+      );
+    } finally {
+      setAddingRow(false);
+    }
+  }, [selectedBarangId, location, logId])
+
+  const handleRemove = useCallback(async () => {
+    if (!selectedRow) return;
+    const confirmed = window.confirm(
+      `Remove entry for "${selectedRow.barang?.kode ?? selectedRow.barang_id}" at location ${selectedRow.location}?`
+    );
+    if (!confirmed) return;
+
+    setRemoving(true);
+    setError(null);
+    try {
+      const resp = await fetch(`${API_BASE}/api/logs/${logId}/entries/${selectedRow.id}`, {
+        method: 'DELETE',
+        headers: { Accept: 'application/json' },
+      });
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.message ?? `Remove failed: ${resp.status}`);
+
+      setRowData((prev) => prev.filter((r) => r.id !== selectedRow.id));
+      setSelectedRow(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to remove entry');
+    } finally {
+      setRemoving(false);
+    }
+  }, [selectedRow, logId]);
+
   return (
     <>
       <FloatingNavbar
-        title={log ? new Date(log.recorded_on).toLocaleDateString() : 'Entries'}
         onBack={() => router.push('/logs')}
+        onAdd={openAddModal}
+        onRemove={handleRemove}
+        canRemove={!!selectedRow}
+        removing={removing}
         onSave={handleSave}
-        saving={saving}
+        saving={saving}                
       />
 
-      <main className="w-full py-6">
+      <main className="w-full pt-25 pb-6">
         <h1 className="text-xl font-semibold mb-4">
           Entries {log ? `— ${new Date(log.recorded_on).toLocaleDateString()}` : ''}
         </h1>
 
         {error && (
-          <div className="mb-2 text-sm text-red-600" px-6>Couldn't load entries: {error}</div>
+          <div className="mb-2 text-sm text-red-600 px-6" >Couldn't load entries: {error}</div>
         )}
 
         <div className="grid-container w-full">
           <div className="ag-theme-quartz w-full">
             <AgGridReact<EntryRow>
+              ref={gridRef}
               theme="legacy"
               domLayout="autoHeight"
               columnDefs={columnDefs}
@@ -271,11 +438,77 @@ export default function EntriesPage() {
               onGridReady={onGridReady}
               loading={loading}
               autoSizeStrategy={{ type: 'fitCellContents' }}
-              defaultColDef={{ sortable: true, filter: true, resizable: true }}
+              defaultColDef={{ sortable: true, resizable: true }}
+              rowSelection="single"
+              onSelectionChanged={onSelectionChanged}
             />
           </div>
         </div>
       </main>
+
+      {showAddModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40">
+          <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
+
+            <h2 className="mb-4 text-lg font-semibold">
+              Add Entry
+            </h2>
+
+            {/* BARANG */}
+            <label className="mb-1 block text-sm font-medium">
+              Barang
+            </label>
+
+            <select
+              value={selectedBarangId}
+              onChange={(e) => setSelectedBarangId(e.target.value)}
+              className="mb-4 w-full rounded-lg border px-3 py-2"
+            >
+              <option value="">
+                Select barang
+              </option>
+
+              {barangOptions.map((barang) => (
+                <option key={barang.id} value={barang.id}>
+                  {barang.kode}
+                </option>
+              ))}
+            </select>
+
+            {/* LOCATION */}
+            <label className="mb-1 block text-sm font-medium">
+              Location
+            </label>
+
+            <input
+              type="number"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              className="w-full rounded-lg border px-3 py-2"
+              placeholder="Enter location"
+            />
+
+            {/* BUTTONS */}
+            <div className="mt-6 flex justify-end gap-2">
+              <button
+                onClick={() => setShowAddModal(false)}
+                className="rounded-lg border px-4 py-2"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={handleConfirmAdd}
+                disabled={!selectedBarangId || !location || addingRow}
+                className="rounded-lg bg-blue-600 px-4 py-2 text-white disabled:opacity-50"
+              >
+                {addingRow ? 'Adding…' : 'Add'}
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
     </>
   );
 }

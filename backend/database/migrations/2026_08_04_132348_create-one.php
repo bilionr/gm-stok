@@ -28,9 +28,6 @@ return new class extends Migration
             // $table->enum('shift', ['morning', 'evening']);
 
             $table->timestamps();
-
-            $table->unique('recorded_on');
-            // or unique(['recorded_on', 'shift'])
         });
         Schema::create('barang_locations', function (Blueprint $table) {
             $table->id();
@@ -73,12 +70,6 @@ return new class extends Migration
             $table->text('notes')->nullable();
 
             $table->timestamps();
-
-            $table->unique([
-                'log_id',
-                'barang_id',
-                'location',
-            ]);
         });
     }
 

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Log;
+use App\Models\Entry;
 use Illuminate\Http\Request;
 
 class EntryController extends Controller
@@ -10,6 +11,14 @@ class EntryController extends Controller
     /**
      * Display a listing of the resource.
      */
+
+    public function availableBarangLocations(Log $log)
+    {
+        $available = BarangLocation::with('barang')->get();
+
+        return response()->json($available);
+    }
+    
     public function index(Log $log)
     {
         $entries = $log->entries()
@@ -26,9 +35,35 @@ class EntryController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(Request $request, Log $log)
     {
-        //
+        $validated = $request->validate([
+            'barang_id' => ['required', 'exists:barangs,id'],
+            'location' => ['required', 'integer'],
+        ]);
+
+        $barangLocation = BarangLocation::firstOrCreate([
+            'barang_id' => $validated['barang_id'],
+            'location' => $validated['location'],
+        ]);
+
+        $entry = Entry::create([
+            'log_id' => $log->id,
+            'barang_id' => $barangLocation->barang_id,
+            'location' => $barangLocation->location,
+
+            'isi' => 0,
+            'tapel' => 0,
+            'tinggi' => 0,
+            'sisa' => 0,
+            'physical_stock' => 0,
+            'notes' => null,
+        ]);
+
+        return response()->json(
+            $entry->load('barang'),
+            201
+        );
     }
 
     /**
@@ -74,8 +109,16 @@ class EntryController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroyEntry(Log $log, Entry $entry)
     {
-        //
+        if ($entry->log_id !== $log->id) {
+            return response()->json(['message' => 'Entry does not belong to this log.'], 403);
+        }
+
+        $entry->delete();
+
+        return response()->json(['message' => 'Entry removed.']);
     }
+
+    
 }

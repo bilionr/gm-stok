@@ -48,8 +48,10 @@ function CustomButtonComponent(props: CustomCellRendererProps<LogRow>) {
 }
 
 export default function LogsPage() {
+  const router = useRouter();
   const [rowData, setRowData] = useState<LogRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [adding, setAdding] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const onGridReady = useCallback((params: GridReadyEvent) => {
@@ -63,6 +65,42 @@ export default function LogsPage() {
         setError(err instanceof Error ? err.message : 'Failed to load logs')
       )
       .finally(() => setLoading(false));
+  }, []);
+
+  const handleAddLog = useCallback(async () => {
+    setAdding(true);
+    setError(null);
+    try {
+      const resp = await fetch(`${API_BASE}/api/logs`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({}), // omit recorded_on -> backend defaults to today
+      });
+      const newLog: LogRow = await resp.json();
+      router.push(`/logs/${newLog.id}/entries`); // jump straight into the new log's entries
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create log');
+    } finally {
+      setAdding(false);
+    }
+  }, [router]);
+
+  const handleDeleteLog = useCallback(async (id: number) => {
+    if (!confirm(`Are you sure you want to delete Log #${id}?`)) return;
+
+    try {
+      const resp = await fetch(`${API_BASE}/api/logs/${id}`, {
+        method: 'DELETE',
+        headers: { Accept: 'application/json' },
+      });
+
+      if (!resp.ok) throw new Error('Failed to delete log');
+
+      // Update state to remove deleted row
+      setRowData((prev) => prev.filter((row) => row.id !== id));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete log');
+    }
   }, []);
 
   const columnDefs = useMemo<ColDef<LogRow>[]>(
@@ -100,13 +138,39 @@ export default function LogsPage() {
         headerName: 'Updated At',
         valueFormatter: (p) => (p.value ? new Date(p.value).toLocaleString() : ''),
       },
+      {
+        headerName: 'Delete',
+        width: 100,
+        sortable: false,
+        filter: false,
+        cellRenderer: (props: CustomCellRendererProps<LogRow>) => (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              if (props.data?.id) handleDeleteLog(props.data.id);
+            }}
+            className="px-3 py-1 rounded bg-red-600 hover:bg-red-700 text-white text-xs font-medium"
+          >
+            Delete
+          </button>
+        ),
+      },
     ],
     []
   );
 
   return (
     <main className="p-6">
-      <h1 className="text-xl font-semibold mb-4">Logs</h1>
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="text-xl font-semibold">Logs</h1>
+        <button
+          onClick={handleAddLog}
+          disabled={adding}
+          className="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium disabled:opacity-50"
+        >
+          {adding ? 'Adding…' : '+ Add'}
+        </button>
+      </div>
 
       {error && (
         <div className="mb-2 text-sm text-red-600">Couldn't load logs: {error}</div>
