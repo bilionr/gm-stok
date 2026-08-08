@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Log extends Model
 {
     protected $fillable = ['recorded_on'];
-    protected $casts = ['recorded_on' => 'date'];
+    protected $casts = ['recorded_on' => 'date:Y-m-d'];
     
     public function entries()
     {

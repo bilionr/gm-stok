@@ -5,17 +5,17 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use App\Models\Barang;
+use App\Models\Omega;
+use App\Models\Log;
+use App\Models\Entry;
+
 
 class StockEntriesSeeder extends Seeder
 {
     public function run(): void
     {
-        $now = now();
-
-        // =========================================================================
-        // PART 1: Seed Unique Items (`barangs` table)
-        // =========================================================================
-        $itemsData = [
+        $itemsWithOmega = [
             ['kode' => 'DLSIP50',    'omega' => 61],
             ['kode' => 'DLPG50',     'omega' => 45],
             ['kode' => 'TLM25',      'omega' => 0],
@@ -52,24 +52,7 @@ class StockEntriesSeeder extends Seeder
             ['kode' => 'MINCUR',     'omega' => 0],
         ];
 
-        foreach ($itemsData as $item) {
-            DB::table('barangs')->updateOrInsert(
-                ['kode' => $item['kode']],
-                [
-                    'omega'      => $item['omega'],
-                    'created_at' => $now,
-                    'updated_at' => $now,
-                ]
-            );
-        }
-
-        // Map item codes to their generated DB IDs and omega values
-        $barangMap = DB::table('barangs')->pluck('id', 'kode');
-        $omegaMap  = DB::table('barangs')->pluck('omega', 'kode');
-
-        // =========================================================================
-        // PART 2: Combine Raw Stock Datasets
-        // =========================================================================
+        // 3. Raw Initial Log Dataset
         $stockEntriesRawInitial = [
             ['barang' => 'DLSIP50',    'lokasi' => 11,  'isi' => 1,  'tapel' => 7,  'tinggi' => 8,   'sisa' => 0,  'date' => '2026-07-31', 'cttn' => ''],
             ['barang' => 'DLPG50',     'lokasi' => 11,  'isi' => 1,  'tapel' => 5,  'tinggi' => 7,   'sisa' => 4,  'date' => '2026-07-31', 'cttn' => ''],
@@ -142,6 +125,7 @@ class StockEntriesSeeder extends Seeder
             ['barang' => 'MINCUR',     'lokasi' => 160, 'isi' => 0,  'tapel' => 0,  'tinggi' => 735, 'sisa' => 0,  'date' => '2026-07-31', 'cttn' => '4053'],
         ];
 
+        // 4. Raw Second Log Dataset
         $stockEntriesRawNew = [
             ['barang' => 'DLSIP50',    'lokasi' => 11,  'isi' => 1,  'tapel' => 7,  'tinggi' => 10, 'sisa' => 2,  'date' => '2026-08-01', 'cttn' => ''],
             ['barang' => 'DLPG50',     'lokasi' => 11,  'isi' => 1,  'tapel' => 5,  'tinggi' => 6,  'sisa' => 0,  'date' => '2026-08-01', 'cttn' => ''],
@@ -214,78 +198,78 @@ class StockEntriesSeeder extends Seeder
             ['barang' => 'MINCUR',     'lokasi' => 160, 'isi' => 0,  'tapel' => 0,  'tinggi' => 680,'sisa' => 0,  'date' => '2026-08-05', 'cttn' => '4053'],
         ];
 
-        $allEntriesRaw = array_merge($stockEntriesRawInitial, $stockEntriesRawNew);
+        // 5. Seed Barangs and Omegas
+        $barangMap = [];
+        $now = now();
 
-        // =========================================================================
-        // PART 3: Seed `logs` Table Dynamically from Entry Dates
-        // =========================================================================
-        $dates = collect($allEntriesRaw)->pluck('date')->unique()->values();
+        foreach ($itemsWithOmega as $item) {
+            // Create Barang
+            $barang = Barang::create(['kode' => $item['kode']]);
+            $barangMap[$item['kode']] = $barang->id;
 
-        foreach ($dates as $date) {
-            DB::table('logs')->updateOrInsert(
-                ['recorded_on' => $date],
-                [
-                    'created_at' => $now,
-                    'updated_at' => $now,
-                ]
-            );
+            // Create Omega record
+            Omega::create([
+                'barang_id' => $barang->id,
+                'qty'       => $item['omega'],
+                'recorded_at' => $now,
+            ]);
         }
 
-        $logMap = DB::table('logs')->pluck('id', 'recorded_on');
+        // Combine both log datasets
+        $allEntries = array_merge($stockEntriesRawInitial, $stockEntriesRawNew);
 
-        // =========================================================================
-        // PART 4: Seed `barang_locations` Table from Unique Pairs
-        // =========================================================================
-        $locations = collect($allEntriesRaw)
-            ->map(fn($entry) => [
-                'barang_id' => $barangMap[$entry['barang']], // Fixed key here
-                'location'  => $entry['lokasi'],
-            ])
-            ->unique(fn($item) => $item['barang_id'] . '-' . $item['location']);
+        // 6. Seed Logs table (grouped by unique audit date)
+        $uniqueDates = array_unique(array_column($allEntries, 'date'));
+        sort($uniqueDates);
+        $logMap = [];
 
-        foreach ($locations as $loc) {
-            DB::table('barang_locations')->updateOrInsert(
-                [
-                    'barang_id' => $loc['barang_id'],
-                    'location'  => $loc['location'],
-                ],
-                [
-                    'created_at' => $now,
-                    'updated_at' => $now,
-                ]
-            );
+        foreach ($uniqueDates as $date) {
+            $log = Log::create(['recorded_on' => $date]);
+            $logMap[$date] = $log->id;
         }
 
-        // =========================================================================
-        // PART 5: Seed `entries` Table
-        // =========================================================================
+        // 7. Seed Entries table
         $entriesToInsert = [];
 
-        foreach ($allEntriesRaw as $entry) {
-            $barangId = $barangMap[$entry['barang']]; // Fixed key here
-            $logId    = $logMap[$entry['date']];
-            $omega    = $omegaMap[$entry['barang']];  // Fixed key here
+        foreach ($allEntries as $entry) {
+            $barangId = $barangMap[$entry['barang']] ?? null;
+            $logId = $logMap[$entry['date']] ?? null;
 
-            // Formula: Physical Stock = (tapel * tinggi) + sisa
-            $physicalStock = ($entry['tapel'] * $entry['tinggi']) + $entry['sisa'];
-            $difference    = $physicalStock - $omega;
+            if (!$barangId || !$logId) continue;
+
+            $tapel = (int) $entry['tapel'];
+            $tinggi = (int) $entry['tinggi'];
+            $sisa = (int) $entry['sisa'];
+
+            $physicalStock = ($tapel * $tinggi) + $sisa;
+
+            // Fetch latest Omega value for this item from database
+            $omegaStock = Omega::where('barang_id', $barangId)
+                ->latest('recorded_at')
+                ->value('qty') ?? 0;
+
+            $difference = $physicalStock - $omegaStock;
 
             $entriesToInsert[] = [
                 'log_id'         => $logId,
                 'barang_id'      => $barangId,
-                'location'       => $entry['lokasi'],
+                'location'       => (int) $entry['lokasi'],
+                'isi'            => (int) $entry['isi'],
+                'tapel'          => $tapel,
+                'tinggi'         => $tinggi,
+                'sisa'           => $sisa,
                 'physical_stock' => $physicalStock,
-                'omega_stock'    => $omega,
+                'omega_stock'    => $omegaStock,
                 'difference'     => $difference,
-                'notes'          => $entry['cttn'] ?: null,
+                'notes'          => !empty($entry['cttn']) ? $entry['cttn'] : null,
                 'created_at'     => $now,
                 'updated_at'     => $now,
             ];
         }
 
-        // Bulk insert in chunks to respect foreign keys & improve performance
-        foreach (array_chunk($entriesToInsert, 50) as $chunk) {
-            DB::table('entries')->insertOrIgnore($chunk);
+        // Mass insert entries in chunks
+        foreach (array_chunk($entriesToInsert, 100) as $chunk) {
+            Entry::insert($chunk);
         }
     }
 }

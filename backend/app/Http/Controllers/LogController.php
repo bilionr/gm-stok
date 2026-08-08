@@ -16,16 +16,9 @@ class LogController extends Controller
      */
     public function index()
     {
-        $logs = Log::withCount([
-            'entries',
-            'entries as discrepancies_count' => function ($query) {
-                $query->where('difference', '!=', 0);
-            },
-        ])
-        ->orderByDesc('recorded_on')
-        ->get();
-
-        return response()->json($logs);
+        return response()->json(
+            Log::orderByDesc('recorded_on')->get()
+        );
     }
 
     /**
@@ -33,40 +26,9 @@ class LogController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'recorded_on' => 'nullable|date',
+        $log = Log::create([
+            'recorded_on' => $request->input('recorded_on', now()->toDateString()),
         ]);
-
-        $recordedOn = $validated['recorded_on'] ?? now()->toDateString();
-
-        $log = DB::transaction(function () use ($recordedOn) {
-            $log = Log::create(['recorded_on' => $recordedOn]);
-
-            // Seed one entry per barang+location combo currently on record
-            $barangLocations = BarangLocation::select('barang_id', 'location')->get();
-
-            $rows = $barangLocations->map(fn ($bl) => [
-                'log_id'         => $log->id,
-                'barang_id'      => $bl->barang_id,
-                'location'       => $bl->location,
-                'isi'            => 0,
-                'tapel'          => 0,
-                'tinggi'         => 0,
-                'sisa'           => 0,
-                'physical_stock' => 0,
-                'omega_stock'    => 0,
-                'difference'     => 0,
-                'notes'          => null,
-                'created_at'     => now(),
-                'updated_at'     => now(),
-            ])->toArray();
-
-            if (!empty($rows)) {
-                Entry::insert($rows); // bulk insert, avoids N queries
-            }
-
-            return $log;
-        });
 
         return response()->json($log, 201);
     }

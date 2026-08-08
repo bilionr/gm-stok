@@ -102,58 +102,39 @@ export default function LogsPage() {
   }, []);
 
   const columnDefs = useMemo<ColDef<LogRow>[]>(
-    () => [
-      {
-        field: 'actions' as any,
-        headerName: 'Actions',
-        cellRenderer: CustomButtonComponent,
-        width: 120,
-        sortable: false,
-        filter: false,
-      },
-      { field: 'id', headerName: 'ID', width: 90 },
-      {
-        field: 'recorded_on',
-        headerName: 'Recorded On',
-        valueFormatter: (p) =>
-          p.value
-            ? new Date(p.value).toLocaleDateString(undefined, {
-                year: 'numeric',
-                month: 'short',
-                day: '2-digit',
-              })
-            : '',
-      },
-      {
-        field: 'created_at',
-        headerName: 'Created At',
-        valueFormatter: (p) => (p.value ? new Date(p.value).toLocaleString() : ''),
-      },
-      {
-        field: 'updated_at',
-        headerName: 'Updated At',
-        valueFormatter: (p) => (p.value ? new Date(p.value).toLocaleString() : ''),
-      },
-      {
-        headerName: 'Delete',
-        width: 100,
-        sortable: false,
-        filter: false,
-        cellRenderer: (props: CustomCellRendererProps<LogRow>) => (
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              if (props.data?.id) handleDeleteLog(props.data.id);
-            }}
-            className="px-3 py-1 rounded bg-red-600 hover:bg-red-700 text-white text-xs font-medium"
-          >
-            Delete
-          </button>
-        ),
-      },
-    ],
-    []
-  );
+  () => [
+    {
+      field: 'id',
+      headerName: 'ID',
+      width: 90,
+    },
+    {
+      field: 'recorded_on',
+      headerName: 'Recorded On',
+      valueFormatter: (p) =>
+        p.value
+          ? new Date(p.value).toLocaleDateString(undefined, {
+              year: 'numeric',
+              month: 'short',
+              day: '2-digit',
+            })
+          : '',
+    },
+    {
+      field: 'created_at',
+      headerName: 'Created At',
+      valueFormatter: (p) =>
+        p.value ? new Date(p.value).toLocaleString() : '',
+    },
+    {
+      field: 'updated_at',
+      headerName: 'Updated At',
+      valueFormatter: (p) =>
+        p.value ? new Date(p.value).toLocaleString() : '',
+    },
+  ],
+  []
+);
 
   return (
     <main className="p-6">
@@ -173,17 +154,29 @@ export default function LogsPage() {
       )}
 
       <div className="grid-container">
-        <div className="ag-theme-quartz" style={{ height: 600, width: '100%' }}>
-          <AgGridReact<LogRow>
-            theme="legacy"
-            columnDefs={columnDefs}
-            rowData={rowData}
-            onGridReady={onGridReady}
-            loading={loading}
-            autoSizeStrategy={{ type: 'fitCellContents' }}
-            defaultColDef={{ sortable: true, filter: true, resizable: true }}
-          />
-        </div>
+        <div
+  className="ag-theme-quartz"
+  style={{
+    height: 600,
+    width: '100%',
+  }}
+>
+  <AgGridReact<LogRow>
+    theme="legacy"
+    columnDefs={columnDefs}
+    rowData={rowData}
+    onGridReady={onGridReady}
+    loading={loading}
+    autoSizeStrategy={{
+      type: 'fitCellContents',
+    }}
+    defaultColDef={{
+      sortable: true,
+      filter: true,
+      resizable: true,
+    }}
+  />
+</div>
       </div>
     </main>
   );

@@ -13,10 +13,7 @@ return new class extends Migration
     {
         Schema::create('barangs', function (Blueprint $table) {
             $table->id();
-
-            $table->string('kode')->unique();
-            $table->integer('omega')->default(0);
-
+            $table->string('kode');
             $table->timestamps();
         });
         Schema::create('logs', function (Blueprint $table) {
@@ -29,18 +26,21 @@ return new class extends Migration
 
             $table->timestamps();
         });
-        Schema::create('barang_locations', function (Blueprint $table) {
+        Schema::create('omegas', function (Blueprint $table) {
             $table->id();
 
+            // Foreign key linking to barangs table
             $table->foreignId('barang_id')
                 ->constrained('barangs')
-                ->cascadeOnDelete();
+                ->cascadeOnDelete(); // Or ->restrictOnDelete() depending on your business rule
 
-            $table->integer('location');
+            // Quantity of goods
+            $table->integer('qty');
+
+            // Custom timestamp to track when this Omega log entry was recorded
+            $table->timestamp('recorded_at')->useCurrent(); 
 
             $table->timestamps();
-
-            $table->unique(['barang_id', 'location']);
         });
         Schema::create('entries', function (Blueprint $table) {
             $table->id();
@@ -79,7 +79,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('entries');
-        Schema::dropIfExists('barang_locations');
+        Schema::dropIfExists('omegas');
         Schema::dropIfExists('logs');
         Schema::dropIfExists('barangs');
     }

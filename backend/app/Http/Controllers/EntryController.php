@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Log;
 use App\Models\Entry;
+use App\Models\Barang;
 use Illuminate\Http\Request;
 
 class EntryController extends Controller
@@ -39,19 +40,15 @@ class EntryController extends Controller
     {
         $validated = $request->validate([
             'barang_id' => ['required', 'exists:barangs,id'],
-            'location' => ['required', 'integer'],
         ]);
 
-        $barangLocation = BarangLocation::firstOrCreate([
-            'barang_id' => $validated['barang_id'],
-            'location' => $validated['location'],
-        ]);
+        // 2. Query the Barang record to get details if needed
+        $barang = Barang::findOrFail($validated['barang_id']);
 
         $entry = Entry::create([
             'log_id' => $log->id,
-            'barang_id' => $barangLocation->barang_id,
-            'location' => $barangLocation->location,
-
+            'barang_id' => $validated->barang_id,
+            'location' => 1,
             'isi' => 0,
             'tapel' => 0,
             'tinggi' => 0,

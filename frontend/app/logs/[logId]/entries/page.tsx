@@ -35,7 +35,7 @@ interface EntryRow {
   notes: string | null;
   created_at: string;
   updated_at: string;
-  barang?: { id: number; name: string };
+  barang?: { id: number; kode: string };
 }
 
 interface LogSummary {
@@ -150,8 +150,6 @@ export default function EntriesPage() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [barangOptions, setBarangOptions] = useState<BarangOption[]>([]);
   const [selectedBarangId, setSelectedBarangId] = useState('');
-  const [location, setLocation] = useState('');
-  const [selectedOptionId, setSelectedOptionId] = useState<string>('');
   const [loadingOptions, setLoadingOptions] = useState(false);
   const [addingRow, setAddingRow] = useState(false);
 
@@ -309,7 +307,6 @@ export default function EntriesPage() {
   const openAddModal = useCallback(() => {
     setShowAddModal(true);
     setSelectedBarangId('');
-    setLocation('');
     setLoadingOptions(true);
 
     fetch(`${API_BASE}/api/barangs`, {
@@ -324,8 +321,9 @@ export default function EntriesPage() {
 
         return resp.json();
       })
-      .then((data: BarangOption[]) => {
-        setBarangOptions(data);
+      .then((data) => {
+        const optionsList = Array.isArray(data) ? data : data.data ?? [];
+        setBarangOptions(optionsList);
       })
       .catch((err) => {
         console.error(err);
@@ -337,7 +335,10 @@ export default function EntriesPage() {
   }, []);
 
   const handleConfirmAdd = useCallback(async () => {
-    if (!selectedBarangId || !location) return;
+    if (!selectedBarangId || !logId || logId === 'undefined') {
+      setError("Invalid Log ID or no item selected.");
+      return;
+    }
 
     setAddingRow(true);
     setError(null);
@@ -353,7 +354,6 @@ export default function EntriesPage() {
           },
           body: JSON.stringify({
             barang_id: Number(selectedBarangId),
-            location: Number(location),
           }),
         }
       );
@@ -378,7 +378,7 @@ export default function EntriesPage() {
     } finally {
       setAddingRow(false);
     }
-  }, [selectedBarangId, location, logId])
+  }, [selectedBarangId, logId])
 
   const handleRemove = useCallback(async () => {
     if (!selectedRow) return;
@@ -436,6 +436,7 @@ export default function EntriesPage() {
               columnDefs={columnDefs}
               rowData={rowData}
               onGridReady={onGridReady}
+              onCellValueChanged={onCellValueChanged}
               loading={loading}
               autoSizeStrategy={{ type: 'fitCellContents' }}
               defaultColDef={{ sortable: true, resizable: true }}
@@ -448,7 +449,7 @@ export default function EntriesPage() {
 
       {showAddModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40">
-          <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
+          <div className="w-full max-w-md rounded-xl bg-white p-6 text-gray-900 shadow-xl">
 
             <h2 className="mb-4 text-lg font-semibold">
               Add Entry
@@ -463,9 +464,10 @@ export default function EntriesPage() {
               value={selectedBarangId}
               onChange={(e) => setSelectedBarangId(e.target.value)}
               className="mb-4 w-full rounded-lg border px-3 py-2"
+              disabled={loadingOptions}
             >
               <option value="">
-                Select barang
+                {loadingOptions ? 'Loading options…' : 'Select barang'}
               </option>
 
               {barangOptions.map((barang) => (
@@ -474,19 +476,6 @@ export default function EntriesPage() {
                 </option>
               ))}
             </select>
-
-            {/* LOCATION */}
-            <label className="mb-1 block text-sm font-medium">
-              Location
-            </label>
-
-            <input
-              type="number"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              className="w-full rounded-lg border px-3 py-2"
-              placeholder="Enter location"
-            />
 
             {/* BUTTONS */}
             <div className="mt-6 flex justify-end gap-2">
@@ -498,8 +487,9 @@ export default function EntriesPage() {
               </button>
 
               <button
+                type="button"
                 onClick={handleConfirmAdd}
-                disabled={!selectedBarangId || !location || addingRow}
+                disabled={!selectedBarangId || addingRow}
                 className="rounded-lg bg-blue-600 px-4 py-2 text-white disabled:opacity-50"
               >
                 {addingRow ? 'Adding…' : 'Add'}
