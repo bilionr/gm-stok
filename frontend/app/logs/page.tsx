@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useState, useMemo, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { AgGridReact } from 'ag-grid-react';
 import {
   ColDef,
@@ -26,6 +26,28 @@ interface LogRow {
   updated_at: string;
 }
 
+function NavLabel({
+  label,
+  href,
+  active,
+}: {
+  label: string;
+  href: string;
+  active: boolean;
+}) {
+  const router = useRouter();
+  return (
+    <button
+      onClick={() => router.push(href)}
+      className={`text-xl font-semibold transition-colors ${
+        active ? 'text-gray-900' : 'text-gray-400 hover:text-gray-600'
+      }`}
+    >
+      {label}
+    </button>
+  );
+}
+
 function CustomButtonComponent(props: CustomCellRendererProps<LogRow>) {
   const router = useRouter();
 
@@ -47,6 +69,7 @@ function CustomButtonComponent(props: CustomCellRendererProps<LogRow>) {
 
 export default function LogsPage() {
   const router = useRouter();
+  const pathname = usePathname();
   const [rowData, setRowData] = useState<LogRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [adding, setAdding] = useState(false);
@@ -158,7 +181,11 @@ export default function LogsPage() {
   return (
     <main className="p-6">
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-xl font-semibold">Logs</h1>
+        <div className="flex items-center gap-4">
+          <NavLabel label="Logs" href="/logs" active={pathname === '/logs'} />
+          <NavLabel label="Omega" href="/omega" active={pathname === '/omega'} />
+          <NavLabel label="Barangs" href="/barangs" active={pathname === '/barangs'} />
+        </div>
         <button
           onClick={handleAddLog}
           disabled={adding}

@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('kode');
             $table->timestamps();
+            $table->boolean('active');
         });
         Schema::create('logs', function (Blueprint $table) {
             $table->id();

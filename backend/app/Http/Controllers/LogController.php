@@ -26,11 +26,38 @@ class LogController extends Controller
      */
     public function store(Request $request)
     {
-        $log = Log::create([
-            'recorded_on' => $request->input('recorded_on', now()->toDateString()),
-        ]);
+        return DB::transaction(function () use ($request) {
+            // 1. Find the latest existing log (before creating the new one)
+            $latestLog = Log::orderByDesc('id')->first();
 
-        return response()->json($log, 201);
+            // 2. Create the new log
+            $log = Log::create([
+                'recorded_on' => $request->input('recorded_on', now()->toDateString()),
+            ]);
+
+            // 3. Copy entries from the latest log, if one exists
+            if ($latestLog) {
+                $entries = Entry::where('log_id', $latestLog->id)->get();
+
+                foreach ($entries as $entry) {
+                    Entry::create([
+                        'log_id'         => $log->id,
+                        'barang_id'      => $entry->barang_id,
+                        'location'       => $entry->location,
+                        'isi'            => $entry->isi,
+                        'tapel'          => $entry->tapel,
+                        'tinggi'         => $entry->tinggi,
+                        'sisa'           => $entry->sisa,
+                        'physical_stock' => $entry->physical_stock,
+                        'omega_stock'    => $entry->omega_stock,
+                        'difference'     => $entry->difference,
+                        'notes'          => $entry->notes,
+                    ]);
+                }
+            }
+
+            return response()->json($log, 201);
+        });
     }
 
     /**

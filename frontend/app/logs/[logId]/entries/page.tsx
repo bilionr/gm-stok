@@ -194,14 +194,20 @@ export default function EntriesPage() {
       {
         field: 'barang.kode' as any,
         headerName: 'Item',
-        flex: 1.5,
+        flex: 5,
         valueGetter: (p) => p.data?.barang?.kode ?? `#${p.data?.barang_id}`,
       },
-      { field: 'location', headerName: 'Location', width: 25 },
+      { field: 'location', 
+        headerName: 'Lok', 
+        width: 60,
+        editable: true,
+        type: 'numericColumn',
+        valueParser: (p) => Number(p.newValue) || 0,
+       },
       {
         field: 'isi',
         headerName: 'Isi',
-        width: 25,
+        width:60,
         editable: true,
         type: 'numericColumn',
         valueParser: (p) => Number(p.newValue) || 0,
@@ -209,7 +215,7 @@ export default function EntriesPage() {
       {
         field: 'tapel',
         headerName: 'Tapel',
-        width: 25,
+        width:60,
         editable: true,
         type: 'numericColumn',
         valueParser: (p) => Number(p.newValue) || 0,
@@ -217,7 +223,7 @@ export default function EntriesPage() {
       {
         field: 'tinggi',
         headerName: 'Tinggi',
-        width: 25,
+        width:60,
         editable: true,
         type: 'numericColumn',
         valueParser: (p) => Number(p.newValue) || 0,
@@ -225,7 +231,7 @@ export default function EntriesPage() {
       {
         field: 'sisa',
         headerName: 'Sisa',
-        width: 25,
+        width:60,
         editable: true,
         type: 'numericColumn',
         valueParser: (p) => Number(p.newValue) || 0,
@@ -267,11 +273,13 @@ export default function EntriesPage() {
     const entries: any[] = [];
     gridRef.current.api.forEachNode((node) => {
       if (!node.data) return;
+      const location = Number(node.data.location) || 0;
       const tapel = Number(node.data.tapel) || 0;
       const tinggi = Number(node.data.tinggi) || 0;
       const sisa = Number(node.data.sisa) || 0;
       entries.push({
         id: node.data.id,
+        location,
         isi: Number(node.data.isi) || 0,
         tapel,
         tinggi,

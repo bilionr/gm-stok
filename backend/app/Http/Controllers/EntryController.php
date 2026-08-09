@@ -47,7 +47,7 @@ class EntryController extends Controller
 
         $entry = Entry::create([
             'log_id' => $log->id,
-            'barang_id' => $validated->barang_id,
+            'barang_id' => $validated['barang_id'],
             'location' => 1,
             'isi' => 0,
             'tapel' => 0,
@@ -79,6 +79,7 @@ class EntryController extends Controller
         $validated = $request->validate([
             'entries' => 'required|array',
             'entries.*.id' => 'required|integer|exists:entries,id',
+            'entries.*.location' => 'nullable|integer',
             'entries.*.isi' => 'nullable|integer',
             'entries.*.tapel' => 'nullable|integer',
             'entries.*.tinggi' => 'nullable|integer',
@@ -91,6 +92,7 @@ class EntryController extends Controller
             Entry::where('id', $entryData['id'])
                 ->where('log_id', $log->id) // guards against updating another log's entries
                 ->update([
+                    'location' => $entryData['location'] ?? 0,
                     'isi' => $entryData['isi'] ?? 0,
                     'tapel' => $entryData['tapel'] ?? 0,
                     'tinggi' => $entryData['tinggi'] ?? 0,
@@ -106,7 +108,7 @@ class EntryController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroyEntry(Log $log, Entry $entry)
+    public function destroy(Log $log, Entry $entry)
     {
         if ($entry->log_id !== $log->id) {
             return response()->json(['message' => 'Entry does not belong to this log.'], 403);
